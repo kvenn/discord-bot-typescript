@@ -38,7 +38,8 @@ export class MessageHandler implements EventHandler {
             const videoSrc = $('video').attr('src');
 
             if (videoSrc) {
-                const formattedMessage = `[Video Link](${videoSrc})`;
+                const usersName = msg.author.username;
+                const formattedMessage = `📽️ Sick clip from ${usersName}: [Link](${videoSrc})`;
                 await MessageUtils.send(msg.channel, formattedMessage);
                 // Delete the original message
                 await msg.delete();
