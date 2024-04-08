@@ -4,10 +4,11 @@ import youtubedl from 'youtube-dl-exec';
 
 import { Trigger } from './trigger.js';
 import { EventData } from '../models/internal-models.js';
+import { Logger } from '../services/index.js';
 
 export class TwitchClipTrigger implements Trigger {
     requireGuild = false;
-    urlRegex = /https:\/\/clips\.twitch\.tv\/(.+)/;
+    urlRegex = /https:\/\/(www\.)?twitch\.tv\/[\w-]+\/(clip\/|clips\/)[\w-]+/;
 
     // Check if the message contains a Twitch clip URL
     triggered(msg: Message): boolean {
@@ -25,33 +26,29 @@ export class TwitchClipTrigger implements Trigger {
             const videoStream = new stream.PassThrough();
 
             // Execute youtube-dl and pipe the output to videoStream
-            const subprocess = youtubedl.exec(
-                url,
-                {
-                    format: 'best',
-                    output: '-', // Direct output to stdout
-                },
-                { stdio: ['ignore', 'pipe', 'ignore'] }
-            );
+            const subprocess = youtubedl.exec(url, {
+                format: 'best',
+                output: '-', // Direct output to stdout
+            });
 
             subprocess.stdout.pipe(videoStream);
 
             // Handle the end of the subprocess
             subprocess.on('close', code => {
-                console.log(`youtube-dl process exited with code ${code}`);
+                Logger.info(`youtube-dl process exited with code ${code}`);
             });
 
             // Send the video stream directly as an attachment in Discord using AttachmentBuilder
             const attachment = new AttachmentBuilder(videoStream, { name: 'clip.mp4' });
-            msg.channel
-                .send({
+            try {
+                await msg.channel.send({
                     content: `Here's your Twitch clip!`,
                     files: [attachment],
-                })
-                .then(() => {
-                    console.log('Video sent to Discord');
-                })
-                .catch(console.error);
+                });
+                Logger.info('Video sent to Discord');
+            } catch (error) {
+                Logger.error('Error sending video to Discord:', error);
+            }
         }
     }
 }
