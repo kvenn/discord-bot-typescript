@@ -36,6 +36,8 @@ import {
 } from './services/index.js';
 import { Trigger } from './triggers/index.js';
 import 'global-agent/bootstrap.js';
+import { TwitchClipTrigger } from './triggers/twitch-clip-trigger.js';
+import { XboxMediaTrigger } from './triggers/xbox-media-trigger.js';
 
 dotenv.config();
 
@@ -87,10 +89,8 @@ async function start(): Promise<void> {
         // TODO: Add new reactions here
     ];
 
-    // Triggers
-    let triggers: Trigger[] = [
-        // TODO: Add new triggers here
-    ];
+    // Triggers (a thing that listens to all words in a message)
+    let triggers: Trigger[] = [new XboxMediaTrigger(), new TwitchClipTrigger()];
 
     // Event handlers
     let guildJoinHandler = new GuildJoinHandler(eventDataService);

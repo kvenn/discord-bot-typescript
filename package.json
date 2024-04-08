@@ -61,7 +61,8 @@
         "pm2": "^5.3.0",
         "reflect-metadata": "^0.2.1",
         "remove-markdown": "0.5.0",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "youtube-dl-exec": "^2.5.8"
     },
     "devDependencies": {
         "@types/express": "4.17.21",
