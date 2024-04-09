@@ -25,6 +25,7 @@ import {
     VoiceStateUpdateHandler,
 } from './events/index.js';
 import { CustomClient } from './extensions/index.js';
+import { CheckNewClipsJob, kyleGameClipPoster } from './jobs/check-new-clips-job.js';
 import { Job } from './jobs/index.js';
 import { Bot } from './models/bot.js';
 import { Reaction } from './reactions/index.js';
@@ -36,6 +37,8 @@ import {
 } from './services/index.js';
 import { Trigger } from './triggers/index.js';
 import 'global-agent/bootstrap.js';
+import { TwitchClipTrigger } from './triggers/twitch-clip-trigger.js';
+import { XboxMediaTrigger } from './triggers/xbox-media-trigger.js';
 
 dotenv.config();
 
@@ -87,10 +90,8 @@ async function start(): Promise<void> {
         // TODO: Add new reactions here
     ];
 
-    // Triggers
-    let triggers: Trigger[] = [
-        // TODO: Add new triggers here
-    ];
+    // Triggers (a thing that listens to all words in a message)
+    let triggers: Trigger[] = [new XboxMediaTrigger(), new TwitchClipTrigger()];
 
     // Event handlers
     let guildJoinHandler = new GuildJoinHandler(eventDataService);
@@ -103,9 +104,7 @@ async function start(): Promise<void> {
     let voiceStateUpdateHandler = new VoiceStateUpdateHandler(eventDataService);
 
     // Jobs
-    let jobs: Job[] = [
-        // TODO: Add new jobs here
-    ];
+    let jobs: Job[] = [new CheckNewClipsJob(client, [kyleGameClipPoster])];
 
     // Bot
     let bot = new Bot(
