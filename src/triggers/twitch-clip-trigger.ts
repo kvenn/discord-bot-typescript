@@ -8,7 +8,7 @@ import { Logger } from '../services/index.js';
 
 export class TwitchClipTrigger implements Trigger {
     requireGuild = false;
-    urlRegex = /https:\/\/(www\.)?twitch\.tv\/[\w-]+\/(clip\/|clips\/)[\w-]+/;
+    urlRegex = /https:\/\/(clips\.twitch\.tv\/[^\s]+|www\.twitch\.tv\/[^\s]+\/clip\/[^\s]+)/;
 
     // Check if the message contains a Twitch clip URL
     triggered(msg: Message): boolean {
@@ -20,7 +20,9 @@ export class TwitchClipTrigger implements Trigger {
         const matches = msg.content.match(this.urlRegex);
 
         if (matches) {
-            const url = matches[0]; // Extract the URL
+            const match = matches[0]; // Extract the URL
+            // If the last character is a >, then remove it
+            const url = match.endsWith('>') ? match.slice(0, -1) : match;
 
             // Set up a stream.PassThrough to stream the download directly
             const videoStream = new stream.PassThrough();

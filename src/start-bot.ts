@@ -25,6 +25,7 @@ import {
     VoiceStateUpdateHandler,
 } from './events/index.js';
 import { CustomClient } from './extensions/index.js';
+import { CheckNewClipsJob, kyleGameClipPoster } from './jobs/check-new-clips-job.js';
 import { Job } from './jobs/index.js';
 import { Bot } from './models/bot.js';
 import { Reaction } from './reactions/index.js';
@@ -103,9 +104,7 @@ async function start(): Promise<void> {
     let voiceStateUpdateHandler = new VoiceStateUpdateHandler(eventDataService);
 
     // Jobs
-    let jobs: Job[] = [
-        // TODO: Add new jobs here
-    ];
+    let jobs: Job[] = [new CheckNewClipsJob(client, [kyleGameClipPoster])];
 
     // Bot
     let bot = new Bot(
