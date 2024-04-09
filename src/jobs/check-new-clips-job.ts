@@ -17,6 +17,7 @@ export const kyleGameClipPoster: ClipPoster = {
 };
 
 interface Clip {
+    id: string;
     url: string;
     created_at: string;
 }
@@ -25,14 +26,14 @@ interface ClipData {
     data: Clip[];
 }
 
-const inMemoryCache: Map<string, string> = new Map<string, string>();
+const inMemoryIds: string[] = [];
 const minuteInMs = 60000;
 
 export class CheckNewClipsJob extends Job {
     name = 'CheckNewClipsJob';
     log = true;
     // Every 1 minute
-    schedule = '0 * * * * *';
+    schedule = '*/30 * * * * *';
     private twitchBaseUrl = 'https://api.twitch.tv/helix/clips';
     private readonly clipPosters: ClipPoster[];
     private readonly client: CustomClient;
@@ -65,15 +66,11 @@ export class CheckNewClipsJob extends Job {
 
     public async run(): Promise<void> {
         for (const clipPoster of this.clipPosters) {
-            const mostRecentCreatedIsoString = inMemoryCache.get(clipPoster.twitchBroadcastId);
-            const isoStringToUse =
-                mostRecentCreatedIsoString ?? new Date(Date.now() - minuteInMs).toISOString();
+            const isoStringToUse = new Date(Date.now() - minuteInMs).toISOString();
             const clips = await this.fetchClips(clipPoster.twitchBroadcastId, isoStringToUse);
             if (clips.length === 0) {
                 continue;
             }
-
-            inMemoryCache.set(clipPoster.twitchBroadcastId, clips[0].created_at);
 
             const guild = await ClientUtils.getGuild(this.client, clipPoster.guildId);
             const textChannel = await ClientUtils.findTextChannel(guild, clipPoster.textChannelId);
@@ -85,11 +82,10 @@ export class CheckNewClipsJob extends Job {
             }
 
             for (const clip of clips) {
-                const clipCreationTime = new Date(clip.created_at).getTime();
-                const mostRecentTime = new Date(isoStringToUse).getTime();
-                if (clipCreationTime > mostRecentTime) {
-                    textChannel.send(`New clip: <${clip.url}>`);
+                if (!inMemoryIds.includes(clip.id)) {
+                    await textChannel.send(`New clip: <${clip.url}>`);
                 }
+                inMemoryIds.push(clip.id);
             }
         }
     }
